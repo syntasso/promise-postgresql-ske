@@ -1,0 +1,22 @@
+---
+apiVersion: marketplace.kratix.io/v1alpha2
+kind: postgresql
+metadata:
+  name: dev
+  namespace: default
+spec:
+  env: dev
+  teamId: acme-org-team-b
+  dbName: bestdb
+  backupEnabled: false
+---
+apiVersion: marketplace.kratix.io/v1alpha2
+kind: postgresql
+metadata:
+  name: testing
+  namespace: default
+spec:
+  env: dev
+  teamId: acme-org-team-c
+  dbName: bestdb
+  backupEnabled: false

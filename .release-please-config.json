@@ -1,0 +1,15 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "prerelease": false,
+      "prerelease-type": "beta",
+      "extra-files": [
+        "promise.yaml",
+        "promise-ha.yaml",
+        "promise-release.yaml",
+        "workflows/configure-pipeline/Makefile"
+      ]
+    }
+  }
+}
