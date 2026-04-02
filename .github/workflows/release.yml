@@ -47,5 +47,5 @@ jobs:
         if: ${{ !needs.release-please.outputs.prerelease }}
         run: |
           docker buildx imagetools create \
-            --tag ghcr.io/syntasso/promise-postgresql/postgresql-configure-pipeline:latest \
-            ghcr.io/syntasso/promise-postgresql/postgresql-configure-pipeline:${{ needs.release-please.outputs.tag_name }}
+            --tag ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:latest \
+            ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:${{ needs.release-please.outputs.tag_name }}

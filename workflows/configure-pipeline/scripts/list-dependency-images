@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_DIR="${SCRIPT_DIR}/.."
+
+cd "${MODULE_DIR}"
+
+if ! command -v yq >/dev/null 2>&1; then
+    echo "yq is required" >&2
+    exit 1
+fi
+
+query='
+  .. |
+  select(tag == "!!map") |
+  to_entries[] |
+  select((.key | test("(^|_)image($|_)")) and .key != "imagePullPolicy") |
+  select((.value | tag) == "!!str")
+'
+
+echo "# Unique images"
+yq ea -N -r "${query} | .value" resources/dependencies/*.yaml | sort -u
+echo
+echo "# Image references"
+yq ea -N -r "${query} | [filename, .key, .value] | @tsv" resources/dependencies/*.yaml

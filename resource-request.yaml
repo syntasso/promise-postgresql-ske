@@ -1,5 +1,5 @@
 apiVersion: marketplace.kratix.io/v1alpha2
-kind: postgresql
+kind: ske-postgresql
 metadata:
   name: example
   namespace: default
@@ -7,4 +7,4 @@ spec:
   env: dev
   teamId: acme-org-team-a
   dbName: bestdb
-  backupEnabled: false
+  backupEnabled: true

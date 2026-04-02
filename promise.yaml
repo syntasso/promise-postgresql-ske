@@ -1,22 +1,23 @@
 apiVersion: platform.kratix.io/v1alpha1
 kind: Promise
 metadata:
-  name: postgresql
+  name: ske-postgresql
   labels:
     kratix.io/promise-version: v0.0.0 # x-release-please-version
-    kratix.io/backstage: "true"
+    kratix.io/backstage: "true" # Enable the promise to show up on Backstage
+    kratix.io/cortex: "true" # Enable the promise to show up on Cortex
 spec:
   api:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:
-      name: postgresqls.marketplace.kratix.io
+      name: ske-postgresqls.marketplace.kratix.io
     spec:
       group: marketplace.kratix.io
       names:
-        kind: postgresql
-        plural: postgresqls
-        singular: postgresql
+        kind: ske-postgresql
+        plural: ske-postgresqls
+        singular: ske-postgresql
       scope: Namespaced
       versions:
         - name: v1alpha2
@@ -68,8 +69,8 @@ spec:
             namespace: default
           spec:
             containers:
-              - image: ghcr.io/syntasso/promise-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
-                name: psql-promise-pipeline
+              - image: ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+                name: postgresql-promise-pipeline
     resource:
       configure:
         - apiVersion: platform.kratix.io/v1alpha1
@@ -79,9 +80,12 @@ spec:
             namespace: default
           spec:
             containers:
-              - image: ghcr.io/syntasso/promise-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+              - image: ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
                 name: postgresql-configure-pipeline
                 env:
                   - name: MINIMUM_REPLICAS
                     value: "1"
-status: {}
+status:
+  workflows: 0
+  workflowsFailed: 0
+  workflowsSucceeded: 0

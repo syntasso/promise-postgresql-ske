@@ -1,4 +1,4 @@
-IMAGE ?= ghcr.io/syntasso/promise-postgresql/postgresql-configure-pipeline
+IMAGE ?= ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline
 TAG   ?= v0.0.0 # x-release-please-version
 KIND_CLUSTER ?= platform
 
@@ -7,7 +7,7 @@ ifdef CI
 BUILD_FLAGS += --cache-from type=gha --cache-to type=gha,mode=max
 endif
 
-REPO_ROOT      ?= $(shell git rev-parse --show-toplevel)
+EXAMPLE_ROOT   ?= $(abspath ../..)
 WORKER_CONTEXT ?= kind-worker
 
 .PHONY: help build clean load pull push test
@@ -33,6 +33,6 @@ push: ## Build and push the Docker image for linux/amd64 and linux/arm64
 
 test: ## Run Ginkgo system tests
 	WORKER_CONTEXT=$(WORKER_CONTEXT) \
-	PROMISE_YAML=$(REPO_ROOT)/promise.yaml \
-	RESOURCE_REQUEST_YAML=$(REPO_ROOT)/resource-request.yaml \
+	PROMISE_YAML=$(EXAMPLE_ROOT)/promise.yaml \
+	RESOURCE_REQUEST_YAML=$(EXAMPLE_ROOT)/resource-request.yaml \
 	go test -v ./test/... -timeout 10m
