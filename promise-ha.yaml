@@ -85,7 +85,3 @@ spec:
                 env:
                 - name: MINIMUM_REPLICAS
                   value: "3"
-status:
-  workflows: 0
-  workflowsFailed: 0
-  workflowsSucceeded: 0
