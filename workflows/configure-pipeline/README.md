@@ -7,21 +7,18 @@ used to source defaults for the CRDs rendered by the Promise code.
 
 Bundling dependency manifests into a Promise is a best practice that helps
 mitigate against runtime access issues to these manifests, ensuring they are
-always available to the Promise.  We provide a convenience script to update
+always available to the Promise. We provide a convenience script to update
 these files from the canonical source.
 
-Another best practice is to mirror the required images to a trusted registry and
-use them in the manifests. We provide a script that lists images used by these
-manifests, making it easier to mirror them to a local registry and update the
-manifests to reference them.
+Be aware that if you run your cluster in an [air-gapped environment](https://docs.kratix.io/ske/installing-ske/air-gapped)
+or use a [private registry](https://docs.kratix.io/main/platform-concepts/private-image-registries),
+you will need to update the dependency manifests to point to these images.
 
 ```shell
 # Fetch dependencies
 ./scripts/fetch-deps
 # Fetch reference manifests
 ./scripts/fetch-pipeline-resources
-# Show image references used by bundled dependency manifests
-./scripts/list-dependency-images
 ```
 
 ## Pipeline image
@@ -46,8 +43,7 @@ make push
 
 ## Testing
 
-The test suite uses [Ginkgo](https://onsi.github.io/ginkgo/). To run it, install
-Kratix first (see the
+The test suite uses [Ginkgo](https://onsi.github.io/ginkgo/). To run it, install Kratix first (see the
 [quickstart](https://docs.kratix.io/main/guides/installing-kratix)),
 then:
 
