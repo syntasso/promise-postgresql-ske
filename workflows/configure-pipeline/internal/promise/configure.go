@@ -7,33 +7,31 @@ import (
 	"github.com/syntasso/promise-postgresql/postgresql-configure-pipeline/internal/logger"
 )
 
+func copyDir(src, dst string) error {
+	return os.CopyFS(dst, os.DirFS(src))
+}
+
 func Configure() {
 	const (
 		sourceDir      = "/resources/dependencies"
 		destinationDir = "/kratix/output"
 	)
 
-	logger := logger.New("promise-configure")
+	log := logger.New("promise-configure")
 	start := time.Now()
 
-	logger.Info("PostgreSQL promise configure started")
+	log.Info("PostgreSQL promise configure started")
 
-	fileCount, err := CopyTree(sourceDir, destinationDir, func(sourcePath, destinationPath string) {
-		logger.Info("copying dependency file",
-			"source", sourcePath,
-			"destination", destinationPath,
-		)
-	})
+	err := copyDir(sourceDir, destinationDir)
 	if err != nil {
-		logger.Error(err, "PostgreSQL promise configure failed",
-			"source", sourceDir,
-			"destination", destinationDir,
-		)
+		log.Error(err, "PostgreSQL promise configure failed")
 		os.Exit(1)
 	}
+	log.Info("files copied successfully",
+		"sourceDir", sourceDir,
+		"destinationDir", destinationDir)
 
-	logger.Info("PostgreSQL promise configure completed",
-		"file_count", fileCount,
+	log.Info("PostgreSQL promise configure completed",
 		"duration_ms", time.Since(start).Milliseconds(),
 		"result", "dependencies published",
 	)

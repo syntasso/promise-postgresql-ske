@@ -7,7 +7,7 @@ ifdef CI
 BUILD_FLAGS += --cache-from type=gha --cache-to type=gha,mode=max
 endif
 
-EXAMPLE_ROOT   ?= $(abspath ../..)
+ROOT   ?= $(abspath ../..)
 WORKER_CONTEXT ?= kind-worker
 
 .PHONY: help build clean load pull push test
@@ -33,6 +33,6 @@ push: ## Build and push the Docker image for linux/amd64 and linux/arm64
 
 test: ## Run Ginkgo system tests
 	WORKER_CONTEXT=$(WORKER_CONTEXT) \
-	PROMISE_YAML=$(EXAMPLE_ROOT)/promise.yaml \
-	RESOURCE_REQUEST_YAML=$(EXAMPLE_ROOT)/resource-request.yaml \
+	PROMISE_YAML=$(ROOT)/promise.yaml \
+	RESOURCE_REQUEST_YAML=$(ROOT)/resource-request.yaml \
 	go test -v ./test/... -timeout 10m
