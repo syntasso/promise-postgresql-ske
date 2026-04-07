@@ -7,4 +7,4 @@ spec:
   env: dev
   teamId: acme-org-team-a
   dbName: bestdb
-  backupEnabled: true
+  backupEnabled: false
