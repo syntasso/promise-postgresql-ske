@@ -1,0 +1,78 @@
+apiVersion: platform.kratix.io/v1alpha1
+kind: HealthDefinition
+metadata:
+  name: ${promiseName}-${resourceName}-${namespace}
+  namespace: default
+spec:
+  resourceRef:
+    name: ${resourceName}
+    namespace: ${namespace}
+  promiseRef:
+    name: ${promiseName}
+  schedule: "* * * * *"
+  input: |
+    name: ${resourceName}
+    namespace: ${namespace}
+    team: ${team}
+  workflow:
+    apiVersion: platform.kratix.io/v1alpha1
+    kind: Pipeline
+    metadata:
+      name: healthcheck
+    spec:
+      rbac:
+        permissions:
+          - apiGroups: ["acid.zalan.do"]
+            verbs: ["get"]
+            resources: ["postgresqls"]
+      containers:
+        - image: public.ecr.aws/docker/library/python:3.12-alpine
+          name: check-postgres
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              pip install --no-cache-dir kratix-sdk kubernetes >/tmp/pip.log
+              python - <<'PY'
+              import yaml
+              import kratix_sdk as ks
+              from kubernetes import client, config
+          
+              sdk = ks.KratixSDK()
+              resource = sdk.read_resource_input()
+          
+              name = resource.get_name()
+              namespace = resource.get_value("spec.namespace") or "default"
+              team_id = resource.get_value("spec.teamId") or "acid"
+          
+              pg_resource_name = f"{team_id}-{name}-postgresql"
+          
+              config.load_incluster_config()
+              api = client.CustomObjectsApi()
+          
+              state = "unknown"
+              details = {}
+          
+              try:
+                  pg = api.get_namespaced_custom_object(
+                      group="acid.zalan.do",
+                      version="v1",
+                      namespace=namespace,
+                      plural="postgresqls",
+                      name=pg_resource_name,
+                  )
+          
+                  cluster_status = pg.get("status", {}).get("PostgresClusterStatus", "Unknown")
+                  state = "healthy" if cluster_status == "Running" else "degraded"
+                  details = {"clusterStatus": cluster_status}
+          
+              except Exception as e:
+                  state = "unhealthy"
+                  details = {"error": str(e)}
+          
+              with open("/kratix/output/health-status.yaml", "w") as f:
+                  yaml.dump({"state": state, "details": details}, f)
+          
+              print(f"Health check: {state}")
+              'PY'
