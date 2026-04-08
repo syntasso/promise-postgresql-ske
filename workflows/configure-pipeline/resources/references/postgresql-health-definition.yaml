@@ -61,7 +61,7 @@ spec:
                   )
               
                   cluster_status = pg.get("status", {}).get("PostgresClusterStatus", "Unknown")
-                  state = "healthy" if cluster_status == "Running" else "degraded"
+                  state = "healthy" if cluster_status == "Running" else "unhealthy"
                   details = {"clusterStatus": cluster_status}
               
               except Exception as e:
