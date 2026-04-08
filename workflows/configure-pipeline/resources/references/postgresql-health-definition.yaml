@@ -26,14 +26,13 @@ spec:
             verbs: ["get"]
             resources: ["postgresqls"]
       containers:
-        - image: public.ecr.aws/docker/library/python:3.12-alpine
+        - image: ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
           name: check-postgres
           command:
             - /bin/sh
             - -c
           args:
             - |
-              pip install --no-cache-dir kratix-sdk kubernetes >/tmp/pip.log
               python - <<'PY'
               import yaml
               import kratix_sdk as ks
