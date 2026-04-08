@@ -92,30 +92,24 @@ spec:
                   - -c
                 args:
                   - |
-                    pip install --no-cache-dir kratix-sdk pyyaml >/tmp/pip.log
                     python - <<'PY'
                     import kratix_sdk as ks
                     
                     sdk = ks.KratixSDK()
                     resource = sdk.read_resource_input()
                     
-                    resource_name = resource.get_name()
-                    namespace = resource.get_namespace() or "default"
-                    team = resource.get_value("spec.teamId") or "unknown"
-                    promise_name = "ske-postgresql"
-                    
                     with open("/resources/references/postgresql-health-definition.yaml") as f:
                         template = f.read()
                     
                     content = (
                         template
-                        .replace("${team}", team)
-                        .replace("${resourceName}", resource_name)
-                        .replace("${namespace}", namespace)
-                        .replace("${promiseName}", promise_name)
+                        .replace("${team}", resource.get_value("spec.teamId"))
+                        .replace("${resourceName}", resource.get_name())
+                        .replace("${namespace}", resource.get_namespace())
+                        .replace("${promiseName}", resource.get_group_version_kind().kind)
                     )
                     
                     sdk.write_output("postgresql-health-definition.yaml", content.encode("utf-8"))
                     
-                    print(f"Health definition written for {resource_name} in {namespace}")
+                    print(f"Health definition written for {resource.get_name()} in {resource.get_namespace()}")
                     'PY'
