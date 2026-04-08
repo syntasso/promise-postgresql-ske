@@ -25,6 +25,8 @@ jobs:
               - 'postgresql-example/promise-ha.yaml'
               - 'postgresql-example/resource-request.yaml'
               - 'postgresql-example/workflows/configure-pipeline/**'
+              - '.github/workflows/test.yml'
+              - 'test/**'
 
   system-test:
     needs: changes
@@ -45,12 +47,51 @@ jobs:
         with:
           install_only: true
 
+      - name: Log in to ghcr.io
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u syntasso-pkg --password-stdin
+
       - name: Download latest Kratix
         run: git clone --depth 1 https://github.com/syntasso/kratix.git /tmp/kratix
 
       - name: Run Kratix quickstart
         run: /tmp/kratix/scripts/quick-start.sh
-        timeout-minutes: 5
+        timeout-minutes: 10
+
+      - name: Deploy Flux to the platform cluster
+        run: /tmp/kratix/scripts/register-destination --with-label environment=platform --context kind-platform --name platform-cluster
+
+      - name: Install SKE Health Agent in the worker cluster
+        run: |
+          MINIO_IP=$(docker inspect platform-control-plane | yq ".[0].NetworkSettings.Networks.kind.IPAddress")
+          helm repo add syntasso https://syntasso.github.io/helm-charts
+          helm repo update
+          kubectl --context kind-worker create secret docker-registry syntasso-registry \
+            --namespace default \
+            --docker-server=ghcr.io \
+            --docker-username=syntasso-pkg \
+            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --dry-run=client -o yaml | kubectl --context kind-worker apply -f -
+          helm install health-agent syntasso/k8s-health-agent \
+            --kube-context kind-worker \
+            --set skeLicense=${{ secrets.GHCR_TOKEN }} \
+            --wait
+          kubectl --context kind-worker create secret docker-registry syntasso-registry \
+            --namespace k8s-health-agent-system \
+            --docker-server=ghcr.io \
+            --docker-username=syntasso-pkg \
+            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --dry-run=client -o yaml | kubectl --context kind-worker apply -f -
+          sed "s/MINIO_ENDPOINT/${MINIO_IP}:31337/" test/resources/health-agent-config.yaml \
+            | kubectl --context kind-worker apply -f -
+          ACCESS_KEY=$(kubectl --context kind-platform get secret minio-credentials -n flux-system -o jsonpath='{.data.accesskey}' | base64 -d)
+          SECRET_KEY=$(kubectl --context kind-platform get secret minio-credentials -n flux-system -o jsonpath='{.data.secretkey}' | base64 -d)
+          kubectl --context kind-worker create secret generic minio-credentials \
+            --namespace k8s-health-agent-system \
+            --from-literal=accessKeyID="$ACCESS_KEY" \
+            --from-literal=secretAccessKey="$SECRET_KEY"
+
+      - name: Enable health records GitOps in the platform cluster
+        run: kubectl --context kind-platform apply -f test/resources/worker-health-kustomization.yaml
 
       - name: Build and load pipeline image
         run: make load-workflow
