@@ -26,8 +26,49 @@ jobs:
               - 'postgresql-example/resource-request.yaml'
               - 'postgresql-example/workflows/configure-pipeline/**'
 
-  system-test:
+  test:
     needs: changes
+    if: needs.changes.outputs.promise == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v4
+
+      - name: Install kratix CLI
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          gh release download \
+            --repo syntasso/kratix-cli \
+            --pattern "kratix-cli_Linux_x86_64.tar.gz" \
+            --output kratix-cli.tar.gz
+          tar -xzf kratix-cli.tar.gz kratix
+          sudo mv kratix /usr/local/bin/kratix
+
+      - name: Install kratix-test plugin
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          LATEST=$(gh release list --repo syntasso/enterprise-releases --limit 100 \
+            --json tagName,createdAt \
+            --jq '. | sort_by(.createdAt) | reverse | map(select(.tagName | startswith("kratix-test"))) | .[0].tagName')
+          gh release download "$LATEST" \
+            --repo syntasso/enterprise-releases \
+            --pattern "kratix-test_linux_amd64" \
+            --output /usr/local/bin/kratix-test
+          chmod +x /usr/local/bin/kratix-test
+
+      - name: Run pipeline tests
+        run: make test
+        working-directory: postgresql-example
+
+  system-test:
+    needs: [changes, test]
     if: needs.changes.outputs.promise == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -62,6 +103,6 @@ jobs:
           go-version-file: postgresql-example/workflows/configure-pipeline/go.mod
           cache-dependency-path: postgresql-example/workflows/configure-pipeline/go.sum
 
-      - name: Run tests
-        run: make test
+      - name: Run system tests
+        run: make system-test
         working-directory: postgresql-example
