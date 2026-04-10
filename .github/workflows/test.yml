@@ -13,25 +13,22 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      promise: ${{ steps.filter.outputs.promise }}
+      code: ${{ steps.filter.outputs.code }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            promise:
-              - 'postgresql-example/multiple-resource-requests.yaml'
-              - 'postgresql-example/promise.yaml'
-              - 'postgresql-example/promise-ha.yaml'
-              - 'postgresql-example/resource-request.yaml'
-              - 'postgresql-example/workflows/configure-pipeline/**'
+            code:
+              - 'postgresql-example/**'
               - '.github/workflows/test.yml'
               - 'test/**'
+              - '!**/*.md'
 
   test:
     needs: changes
-    if: needs.changes.outputs.promise == 'true'
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,7 +69,7 @@ jobs:
 
   system-test:
     needs: [changes, test]
-    if: needs.changes.outputs.promise == 'true'
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
