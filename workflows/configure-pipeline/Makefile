@@ -1,6 +1,6 @@
 IMAGE ?= ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline
 TAG   ?= v0.0.0 # x-release-please-version
-KIND_CLUSTER ?= platform
+KIND_CLUSTERS ?= platform,worker
 
 BUILD_FLAGS := -t $(IMAGE):$(TAG)
 ifdef CI
@@ -23,7 +23,9 @@ clean: ## Remove the Docker image from the local machine
 	docker rmi $(IMAGE):$(TAG)
 
 load: build ## Load the Docker image into the kind cluster
-	kind load docker-image $(IMAGE):$(TAG) --name $(KIND_CLUSTER)
+	for cluster in $(shell echo $(KIND_CLUSTERS) | tr ',' ' '); do \
+		kind load docker-image $(IMAGE):$(TAG) --name $$cluster; \
+	done
 
 pull: ## Pull the Docker image from the registry
 	docker pull $(IMAGE):$(TAG)
