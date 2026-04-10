@@ -44,5 +44,7 @@ test: build ## Run kratix pipeline tests for the resource configure workflow
 system-test: ## Run Ginkgo system tests
 	WORKER_CONTEXT=$(WORKER_CONTEXT) \
 	PROMISE_YAML=$(ROOT)/promise.yaml \
+	PROMISE_HA_YAML=$(ROOT)/promise-ha.yaml \
 	RESOURCE_REQUEST_YAML=$(ROOT)/resource-request.yaml \
+	MULTIPLE_RESOURCE_REQUESTS_YAML=$(ROOT)/multiple-resource-requests.yaml \
 	go test -v ./test/... -timeout 10m

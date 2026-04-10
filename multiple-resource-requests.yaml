@@ -1,6 +1,6 @@
 ---
 apiVersion: marketplace.kratix.io/v1alpha2
-kind: postgresql
+kind: ske-postgresql
 metadata:
   name: dev
   namespace: default
@@ -11,7 +11,7 @@ spec:
   backupEnabled: false
 ---
 apiVersion: marketplace.kratix.io/v1alpha2
-kind: postgresql
+kind: ske-postgresql
 metadata:
   name: testing
   namespace: default

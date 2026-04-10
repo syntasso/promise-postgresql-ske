@@ -89,7 +89,15 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 	workerCtx := getEnv("WORKER_CONTEXT", "kind-worker")
 	platformCtx := getEnv("PLATFORM_CONTEXT", "kind-platform")
 	promiseYAML := getEnv("PROMISE_YAML", "../../../promise.yaml")
+	promiseHAYAML := getEnv("PROMISE_HA_YAML", "../../../promise-ha.yaml")
 	resourceRequestYAML := getEnv("RESOURCE_REQUEST_YAML", "../../../resource-request.yaml")
+	multipleResourceRequestsYAML := getEnv("MULTIPLE_RESOURCE_REQUESTS_YAML", "../../../multiple-resource-requests.yaml")
+
+	postgresqlGVR := schema.GroupVersionResource{
+		Group:    "acid.zalan.do",
+		Version:  "v1",
+		Resource: "postgresqls",
+	}
 
 	BeforeAll(func() {
 		ctx = context.Background()
@@ -152,11 +160,6 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 		})
 
 		It("creates the postgresql resource on the worker cluster", func() {
-			postgresqlGVR := schema.GroupVersionResource{
-				Group:    "acid.zalan.do",
-				Version:  "v1",
-				Resource: "postgresqls",
-			}
 			Eventually(func(g Gomega) {
 				_, err := workerDyn.Resource(postgresqlGVR).Namespace("default").Get(
 					ctx, "acme-org-team-a-example-postgresql", metav1.GetOptions{},
@@ -201,6 +204,52 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 				g.Expect(ok).To(BeTrue(), "healthStatus.state field missing")
 				g.Expect(state).To(Equal("healthy"))
 			}).WithTimeout(healthTimeout).WithPolling(pollInterval).Should(Succeed())
+		})
+	})
+
+	Context("Multiple resource requests provisioning", func() {
+		BeforeAll(func() {
+			By("Applying multiple-resource-requests.yaml")
+			Expect(kubectlApply(platformCtx, multipleResourceRequestsYAML)).To(Succeed())
+		})
+
+		It("creates the team-b dev postgresql resource on the worker cluster", func() {
+			Eventually(func(g Gomega) {
+				_, err := workerDyn.Resource(postgresqlGVR).Namespace("default").Get(
+					ctx, "acme-org-team-b-dev-postgresql", metav1.GetOptions{},
+				)
+				g.Expect(err).NotTo(HaveOccurred())
+			}).WithTimeout(crdTimeout).WithPolling(pollInterval).Should(Succeed())
+		})
+
+		It("creates the team-c testing postgresql resource on the worker cluster", func() {
+			Eventually(func(g Gomega) {
+				_, err := workerDyn.Resource(postgresqlGVR).Namespace("default").Get(
+					ctx, "acme-org-team-c-testing-postgresql", metav1.GetOptions{},
+				)
+				g.Expect(err).NotTo(HaveOccurred())
+			}).WithTimeout(crdTimeout).WithPolling(pollInterval).Should(Succeed())
+		})
+	})
+
+	Context("HA Promise", func() {
+		BeforeAll(func() {
+			By("Applying promise-ha.yaml")
+			Expect(kubectlApply(platformCtx, promiseHAYAML)).To(Succeed())
+		})
+
+		It("enforces a minimum of 3 replicas on the postgresql resource", func() {
+			Eventually(func(g Gomega) {
+				pg, err := workerDyn.Resource(postgresqlGVR).Namespace("default").Get(
+					ctx, "acme-org-team-a-example-postgresql", metav1.GetOptions{},
+				)
+				g.Expect(err).NotTo(HaveOccurred())
+				spec, ok := pg.Object["spec"].(map[string]any)
+				g.Expect(ok).To(BeTrue())
+				numberOfInstances, ok := spec["numberOfInstances"].(int64)
+				g.Expect(ok).To(BeTrue())
+				g.Expect(numberOfInstances).To(BeNumerically(">=", 3))
+			}).WithTimeout(podReadyTimeout).WithPolling(pollInterval).Should(Succeed())
 		})
 	})
 })
