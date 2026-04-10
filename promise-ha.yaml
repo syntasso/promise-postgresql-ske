@@ -3,7 +3,7 @@ kind: Promise
 metadata:
   name: ske-postgresql
   labels:
-    kratix.io/promise-version: v0.0.0 # x-release-please-version
+    kratix.io/promise-version: v1.0.0 # x-release-please-version
     kratix.io/backstage: "true" # Enable the promise to show up on Backstage
     kratix.io/cortex: "true" # Enable the promise to show up on Cortex
 spec:
@@ -69,7 +69,7 @@ spec:
             namespace: default
           spec:
             containers:
-              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
                 name: postgresql-promise-pipeline
     resource:
       configure:
@@ -80,12 +80,12 @@ spec:
             namespace: default
           spec:
             containers:
-              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
                 name: postgresql-configure-pipeline
                 env:
                 - name: MINIMUM_REPLICAS
                   value: "3"
-              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+              - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
                 name: deploy-health-definition
                 command:
                   - /bin/sh

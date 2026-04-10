@@ -26,7 +26,7 @@ spec:
             verbs: ["get"]
             resources: ["postgresqls"]
       containers:
-        - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+        - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
           name: check-postgres
           command:
             - /bin/sh
