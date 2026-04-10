@@ -21,9 +21,8 @@ jobs:
         with:
           filters: |
             code:
-              - 'postgresql-example/**'
+              - '**'
               - '.github/workflows/test.yml'
-              - 'test/**'
               - '!**/*.md'
 
   test:
@@ -65,7 +64,7 @@ jobs:
 
       - name: Run pipeline tests
         run: make test
-        working-directory: postgresql-example
+        working-directory: workflows/configure-pipeline
 
   system-test:
     needs: [changes, test]
@@ -134,14 +133,12 @@ jobs:
 
       - name: Build and load pipeline image
         run: make load-workflow
-        working-directory: postgresql-example
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: postgresql-example/workflows/configure-pipeline/go.mod
-          cache-dependency-path: postgresql-example/workflows/configure-pipeline/go.sum
+          go-version-file: workflows/configure-pipeline/go.mod
+          cache-dependency-path: workflows/configure-pipeline/go.sum
 
       - name: Run system tests
         run: make system-test
-        working-directory: postgresql-example

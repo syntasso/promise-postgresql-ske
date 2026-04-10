@@ -1,4 +1,4 @@
-IMAGE ?= ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline
+IMAGE ?= ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline
 TAG   ?= v0.0.0 # x-release-please-version
 KIND_CLUSTERS ?= platform,worker
 

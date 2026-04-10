@@ -1,4 +1,4 @@
-name: release-postgresql-example
+name: release
 
 on:
   push:
@@ -18,8 +18,8 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          config-file: postgresql-example/.release-please-config.json
-          manifest-file: postgresql-example/.release-please-manifest.json
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   publish:
     needs: release-please
@@ -41,11 +41,10 @@ jobs:
 
       - name: Build and push multi-arch image
         run: make push-workflow TAG=${{ needs.release-please.outputs.tag_name }}
-        working-directory: postgresql-example
 
-      - name: Tag as latest
+      - name: Tag image as latest
         if: ${{ !needs.release-please.outputs.prerelease }}
         run: |
           docker buildx imagetools create \
-            --tag ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:latest \
-            ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:${{ needs.release-please.outputs.tag_name }}
+            --tag ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:latest \
+            ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:${{ needs.release-please.outputs.tag_name }}
