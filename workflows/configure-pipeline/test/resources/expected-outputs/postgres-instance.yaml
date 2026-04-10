@@ -1,0 +1,19 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: acme-org-team-a-example-postgresql
+  namespace: default
+spec:
+  databases:
+    bestdb: acme-org-team-a
+  enableLogicalBackup: false
+  numberOfInstances: 1
+  postgresql:
+    version: "16"
+  teamId: acme-org-team-a
+  users:
+    acme-org-team-a:
+    - superuser
+    - createdb
+  volume:
+    size: 1Gi

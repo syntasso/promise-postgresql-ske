@@ -9,6 +9,8 @@ This Promise shows:
 - How to log and what to log in Promise workflows
 - How to use the [SKE Health Agent](https://docs.kratix.io/ske/installing-ske/ske-health-agent) to report Promise status back to SKE
 - How to enable the Promise to be used by the Backstage and Cortex integrations
+- How to use the [Promise Testing Framework](https://docs.kratix.io/ske/promise-testing-framework/intro) to test
+  your Promise code without the need of a live Kubernetes cluster
 
 To install:
 ```
