@@ -21,6 +21,7 @@ jobs:
         with:
           filters: |
             promise:
+              - 'postgresql-example/multiple-resource-requests.yaml'
               - 'postgresql-example/promise.yaml'
               - 'postgresql-example/promise-ha.yaml'
               - 'postgresql-example/resource-request.yaml'
