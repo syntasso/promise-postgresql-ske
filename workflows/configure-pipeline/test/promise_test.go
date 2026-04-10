@@ -23,6 +23,7 @@ const (
 	crdTimeout        = 120 * time.Second
 	deploymentTimeout = 120 * time.Second
 	podReadyTimeout   = 300 * time.Second
+	healthTimeout     = 300 * time.Second
 	pollInterval      = 5 * time.Second
 )
 
@@ -81,10 +82,12 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 		workerCS    *kubernetes.Clientset
 		workerExtCS *apiextensionsclient.Clientset
 		workerDyn   dynamic.Interface
+		platformDyn dynamic.Interface
 		ctx         context.Context
 	)
 
 	workerCtx := getEnv("WORKER_CONTEXT", "kind-worker")
+	platformCtx := getEnv("PLATFORM_CONTEXT", "kind-platform")
 	promiseYAML := getEnv("PROMISE_YAML", "../../../promise.yaml")
 	resourceRequestYAML := getEnv("RESOURCE_REQUEST_YAML", "../../../resource-request.yaml")
 
@@ -101,8 +104,11 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 		workerDyn, err = newDynamicClient(workerCtx)
 		Expect(err).NotTo(HaveOccurred())
 
+		platformDyn, err = newDynamicClient(platformCtx)
+		Expect(err).NotTo(HaveOccurred())
+
 		By("Applying promise.yaml")
-		Expect(kubectlApply("kind-platform", promiseYAML)).To(Succeed())
+		Expect(kubectlApply(platformCtx, promiseYAML)).To(Succeed())
 	})
 
 	Context("Promise installation", func() {
@@ -142,7 +148,7 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 	Context("Resource request provisioning", func() {
 		BeforeAll(func() {
 			By("Applying resource-request.yaml")
-			Expect(kubectlApply("kind-platform", resourceRequestYAML)).To(Succeed())
+			Expect(kubectlApply(platformCtx, resourceRequestYAML)).To(Succeed())
 		})
 
 		It("creates the postgresql resource on the worker cluster", func() {
@@ -174,6 +180,27 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 				}
 				g.Expect(ready).To(BeTrue())
 			}).WithTimeout(podReadyTimeout).WithPolling(pollInterval).Should(Succeed())
+		})
+
+		It("reports a healthy Health Status on the resource", func() {
+			skePostgresqlGVR := schema.GroupVersionResource{
+				Group:    "marketplace.kratix.io",
+				Version:  "v1alpha2",
+				Resource: "ske-postgresqls",
+			}
+			Eventually(func(g Gomega) {
+				obj, err := platformDyn.Resource(skePostgresqlGVR).Namespace("default").Get(
+					ctx, "example", metav1.GetOptions{},
+				)
+				g.Expect(err).NotTo(HaveOccurred())
+				status, ok := obj.Object["status"].(map[string]any)
+				g.Expect(ok).To(BeTrue(), "status field missing")
+				healthStatus, ok := status["healthStatus"].(map[string]any)
+				g.Expect(ok).To(BeTrue(), "healthStatus field missing")
+				state, ok := healthStatus["state"].(string)
+				g.Expect(ok).To(BeTrue(), "healthStatus.state field missing")
+				g.Expect(state).To(Equal("healthy"))
+			}).WithTimeout(healthTimeout).WithPolling(pollInterval).Should(Succeed())
 		})
 	})
 })

@@ -85,3 +85,31 @@ spec:
                 env:
                   - name: MINIMUM_REPLICAS
                     value: "1"
+              - image: ghcr.io/syntasso/ske-promise-example-postgresql/postgresql-configure-pipeline:v0.0.0 # x-release-please-version
+                name: deploy-health-definition
+                command:
+                  - /bin/sh
+                  - -c
+                args:
+                  - |
+                    python - <<'PY'
+                    import kratix_sdk as ks
+                    
+                    sdk = ks.KratixSDK()
+                    resource = sdk.read_resource_input()
+                    
+                    with open("/resources/references/postgresql-health-definition.yaml") as f:
+                        template = f.read()
+                    
+                    content = (
+                        template
+                        .replace("${team}", resource.get_value("spec.teamId"))
+                        .replace("${resourceName}", resource.get_name())
+                        .replace("${namespace}", resource.get_namespace())
+                        .replace("${promiseName}", resource.get_group_version_kind().kind)
+                    )
+                    
+                    sdk.write_output("postgresql-health-definition.yaml", content.encode("utf-8"))
+                    
+                    print(f"Health definition written for {resource.get_name()} in {resource.get_namespace()}")
+                    'PY'

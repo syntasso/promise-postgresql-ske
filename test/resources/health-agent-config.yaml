@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: health-state-store-config
+  namespace: k8s-health-agent-system
+data:
+  stateStoreKind: BucketStateStore
+  endpoint: "MINIO_ENDPOINT"
+  bucketName: kratix
+  path: worker-1/health
+  authMethod: accessKey
+  insecure: "true"
+  secretName: minio-credentials
