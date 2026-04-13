@@ -86,7 +86,7 @@ jobs:
           install_only: true
 
       - name: Log in to ghcr.io
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u syntasso-pkg --password-stdin
+        run: echo "${{ secrets.RELEASE_PLEASE_TOKEN }}" | docker login ghcr.io -u syntasso-pkg --password-stdin
 
       - name: Download latest Kratix
         run: git clone --depth 1 https://github.com/syntasso/kratix.git /tmp/kratix
@@ -107,17 +107,17 @@ jobs:
             --namespace default \
             --docker-server=ghcr.io \
             --docker-username=syntasso-pkg \
-            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --docker-password=${{ secrets.RELEASE_PLEASE_TOKEN }} \
             --dry-run=client -o yaml | kubectl --context kind-worker apply -f -
           helm install health-agent syntasso/k8s-health-agent \
             --kube-context kind-worker \
-            --set skeLicense=${{ secrets.GHCR_TOKEN }} \
+            --set skeLicense=${{ secrets.RELEASE_PLEASE_TOKEN }} \
             --wait
           kubectl --context kind-worker create secret docker-registry syntasso-registry \
             --namespace k8s-health-agent-system \
             --docker-server=ghcr.io \
             --docker-username=syntasso-pkg \
-            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --docker-password=${{ secrets.RELEASE_PLEASE_TOKEN }} \
             --dry-run=client -o yaml | kubectl --context kind-worker apply -f -
           sed "s/MINIO_ENDPOINT/${MINIO_IP}:31337/" test/resources/health-agent-config.yaml \
             | kubectl --context kind-worker apply -f -
