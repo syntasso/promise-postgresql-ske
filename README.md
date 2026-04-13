@@ -14,12 +14,12 @@ This Promise shows:
 
 To install:
 ```
-kubectl apply -f https://raw.githubusercontent.com/syntasso/main/promise-postgresql-ske/promise.yaml
+kubectl apply -f https://raw.githubusercontent.com/syntasso/promise-postgresql-ske/refs/heads/main/promise.yaml
 ```
 
 To make a resource request (small by default):
 ```
-kubectl apply -f https://raw.githubusercontent.com/syntasso/main/promise-postgresql-ske/resource-request.yaml
+kubectl apply -f https://raw.githubusercontent.com/syntasso/promise-postgresql-ske/refs/heads/main/resource-request.yaml
 ```
 
 ## Development
