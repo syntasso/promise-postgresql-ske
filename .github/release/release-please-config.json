@@ -2,6 +2,8 @@
   "packages": {
     ".": {
       "release-type": "simple",
+      "changelog-path": "docs/CHANGELOG.md",
+      "version-file": ".github/release/version.txt",
       "extra-files": [
         "promise.yaml",
         "promise-ha.yaml",
