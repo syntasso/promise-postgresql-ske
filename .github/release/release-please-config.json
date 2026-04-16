@@ -6,7 +6,6 @@
       "version-file": ".github/release/version.txt",
       "extra-files": [
         "promise.yaml",
-        "promise-ha.yaml",
         "promise-release.yaml",
         "workflows/configure-pipeline/Makefile",
         "workflows/configure-pipeline/resources/references/postgresql-health-definition.yaml"
