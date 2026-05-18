@@ -22,6 +22,10 @@ To make a resource request (small by default):
 kubectl apply -f https://raw.githubusercontent.com/syntasso/promise-postgresql-ske/refs/heads/main/resource-request.yaml
 ```
 
+## Airgapped environments
+
+For guidance on running this Promise in an airgapped environment, see [docs/airgapped.md](./docs/airgapped.md).
+
 ## Development
 
 For development see [README.md](./workflows/configure-pipeline/README.md)
