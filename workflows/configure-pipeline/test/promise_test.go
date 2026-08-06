@@ -183,14 +183,14 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 			}).WithTimeout(podReadyTimeout).WithPolling(pollInterval).Should(Succeed())
 		})
 
-		It("reports a healthy Health Status on the resource", func() {
+		It("reports healthy when the request and cluster namespaces differ", func() {
 			skePostgresqlGVR := schema.GroupVersionResource{
 				Group:    "marketplace.kratix.io",
 				Version:  "v1alpha2",
 				Resource: "ske-postgresqls",
 			}
 			Eventually(func(g Gomega) {
-				obj, err := platformDyn.Resource(skePostgresqlGVR).Namespace("default").Get(
+				obj, err := platformDyn.Resource(skePostgresqlGVR).Namespace("request-namespace").Get(
 					ctx, "example", metav1.GetOptions{},
 				)
 				g.Expect(err).NotTo(HaveOccurred())

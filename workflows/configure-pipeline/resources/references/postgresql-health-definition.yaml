@@ -12,7 +12,7 @@ spec:
   schedule: "* * * * *"
   input: |
     name: ${resourceName}
-    namespace: ${namespace}
+    namespace: ${clusterNamespace}
     team: ${team}
   workflow:
     apiVersion: platform.kratix.io/v1alpha1
@@ -28,6 +28,10 @@ spec:
       containers:
         - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
           name: check-postgres
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
           command:
             - /bin/sh
             - -c
