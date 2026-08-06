@@ -39,7 +39,8 @@ test: build ## Run kratix pipeline tests for the resource configure workflow
 	kratix test pipeline resource/configure/instance-configure \
 		--dir $(ROOT) \
 		--input-dir $(PIPELINE_TESTS_DIR)/inputs \
-		--expected-output-dir $(PIPELINE_TESTS_DIR)/expected-outputs
+		--expected-output-dir $(PIPELINE_TESTS_DIR)/expected-outputs \
+		--build-args "--user $(shell id -u):$(shell id -g)"
 
 system-test: ## Run Ginkgo system tests
 	WORKER_CONTEXT=$(WORKER_CONTEXT) \

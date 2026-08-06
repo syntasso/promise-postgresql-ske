@@ -28,10 +28,6 @@ spec:
       containers:
         - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
           name: check-postgres
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 65532
-            runAsGroup: 65532
           command:
             - /bin/sh
             - -c
