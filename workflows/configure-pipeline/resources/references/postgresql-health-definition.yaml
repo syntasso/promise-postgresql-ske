@@ -25,6 +25,7 @@ spec:
           - apiGroups: ["acid.zalan.do"]
             verbs: ["get"]
             resources: ["postgresqls"]
+            resourceNamespace: "*"
       containers:
         - image: ghcr.io/syntasso/promise-postgresql-ske/postgresql-configure-pipeline:v1.0.0 # x-release-please-version
           name: check-postgres

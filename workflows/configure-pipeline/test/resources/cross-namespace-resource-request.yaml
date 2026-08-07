@@ -12,5 +12,5 @@ spec:
   env: dev
   teamId: acme-org-team-a
   dbName: bestdb
-  namespace: default
+  namespace: cluster-namespace
   backupEnabled: false
