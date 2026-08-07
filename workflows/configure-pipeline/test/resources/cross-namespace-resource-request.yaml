@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: request-namespace
+---
+apiVersion: marketplace.kratix.io/v1alpha2
+kind: ske-postgresql
+metadata:
+  name: example
+  namespace: request-namespace
+spec:
+  env: dev
+  teamId: acme-org-team-a
+  dbName: bestdb
+  namespace: cluster-namespace
+  backupEnabled: false

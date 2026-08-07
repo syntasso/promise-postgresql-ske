@@ -105,6 +105,7 @@ spec:
                         template
                         .replace("${team}", resource.get_value("spec.teamId"))
                         .replace("${resourceName}", resource.get_name())
+                        .replace("${clusterNamespace}", resource.get_value("spec.namespace"))
                         .replace("${namespace}", resource.get_namespace())
                         .replace("${promiseName}", resource.get_group_version_kind().kind)
                     )

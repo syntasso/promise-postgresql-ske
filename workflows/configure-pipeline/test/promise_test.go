@@ -12,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -25,6 +26,8 @@ const (
 	podReadyTimeout   = 300 * time.Second
 	healthTimeout     = 300 * time.Second
 	pollInterval      = 5 * time.Second
+	clusterNamespace  = "cluster-namespace"
+	registrySecret    = "syntasso-registry"
 )
 
 func getEnv(key, fallback string) string {
@@ -113,6 +116,28 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 		platformDyn, err = newDynamicClient(platformCtx)
 		Expect(err).NotTo(HaveOccurred())
 
+		_, err = workerCS.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{Name: clusterNamespace},
+		}, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) {
+			Expect(err).NotTo(HaveOccurred())
+		}
+
+		pullSecret, err := workerCS.CoreV1().Secrets("default").Get(
+			ctx, registrySecret, metav1.GetOptions{},
+		)
+		Expect(err).NotTo(HaveOccurred())
+		pullSecret.ObjectMeta = metav1.ObjectMeta{
+			Name:      registrySecret,
+			Namespace: clusterNamespace,
+		}
+		_, err = workerCS.CoreV1().Secrets(clusterNamespace).Create(
+			ctx, pullSecret, metav1.CreateOptions{},
+		)
+		if !apierrors.IsAlreadyExists(err) {
+			Expect(err).NotTo(HaveOccurred())
+		}
+
 		By("Applying promise.yaml")
 		Expect(kubectlApply(platformCtx, promiseYAML)).To(Succeed())
 	})
@@ -159,7 +184,7 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 
 		It("creates the postgresql resource on the worker cluster", func() {
 			Eventually(func(g Gomega) {
-				_, err := workerDyn.Resource(postgresqlGVR).Namespace("default").Get(
+				_, err := workerDyn.Resource(postgresqlGVR).Namespace(clusterNamespace).Get(
 					ctx, "acme-org-team-a-example-postgresql", metav1.GetOptions{},
 				)
 				g.Expect(err).NotTo(HaveOccurred())
@@ -168,7 +193,7 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 
 		It("brings the spilo master pod to Ready", func() {
 			Eventually(func(g Gomega) {
-				pods, err := workerCS.CoreV1().Pods("default").List(ctx, metav1.ListOptions{
+				pods, err := workerCS.CoreV1().Pods(clusterNamespace).List(ctx, metav1.ListOptions{
 					LabelSelector: "spilo-role=master",
 				})
 				g.Expect(err).NotTo(HaveOccurred())
@@ -183,14 +208,14 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 			}).WithTimeout(podReadyTimeout).WithPolling(pollInterval).Should(Succeed())
 		})
 
-		It("reports a healthy Health Status on the resource", func() {
+		It("reports healthy when the request and cluster namespaces differ", func() {
 			skePostgresqlGVR := schema.GroupVersionResource{
 				Group:    "marketplace.kratix.io",
 				Version:  "v1alpha2",
 				Resource: "ske-postgresqls",
 			}
 			Eventually(func(g Gomega) {
-				obj, err := platformDyn.Resource(skePostgresqlGVR).Namespace("default").Get(
+				obj, err := platformDyn.Resource(skePostgresqlGVR).Namespace("request-namespace").Get(
 					ctx, "example", metav1.GetOptions{},
 				)
 				g.Expect(err).NotTo(HaveOccurred())

@@ -31,4 +31,6 @@ RUN pip install --no-cache-dir kratix-sdk kubernetes pyyaml
 COPY --from=builder /usr/bin/pipeline /usr/bin/pipeline
 COPY --from=builder /app/resources /resources
 
+USER 65532:65532
+
 ENTRYPOINT ["/usr/bin/pipeline"]
