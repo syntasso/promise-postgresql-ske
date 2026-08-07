@@ -27,6 +27,7 @@ const (
 	healthTimeout     = 300 * time.Second
 	pollInterval      = 5 * time.Second
 	clusterNamespace  = "cluster-namespace"
+	registrySecret    = "syntasso-registry"
 )
 
 func getEnv(key, fallback string) string {
@@ -118,6 +119,21 @@ var _ = Describe("PostgreSQL Promise", Ordered, func() {
 		_, err = workerCS.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{Name: clusterNamespace},
 		}, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) {
+			Expect(err).NotTo(HaveOccurred())
+		}
+
+		pullSecret, err := workerCS.CoreV1().Secrets("default").Get(
+			ctx, registrySecret, metav1.GetOptions{},
+		)
+		Expect(err).NotTo(HaveOccurred())
+		pullSecret.ObjectMeta = metav1.ObjectMeta{
+			Name:      registrySecret,
+			Namespace: clusterNamespace,
+		}
+		_, err = workerCS.CoreV1().Secrets(clusterNamespace).Create(
+			ctx, pullSecret, metav1.CreateOptions{},
+		)
 		if !apierrors.IsAlreadyExists(err) {
 			Expect(err).NotTo(HaveOccurred())
 		}
