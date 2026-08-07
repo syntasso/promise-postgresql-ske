@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1](https://github.com/syntasso/promise-postgresql-ske/compare/v1.0.0...v1.0.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* grant health checks cross-namespace access ([8d13123](https://github.com/syntasso/promise-postgresql-ske/commit/8d131237f427adb63f45dcb313c1cb6cc579bd78))
+* query ske-postgresql health in cluster namespace ([9774bc1](https://github.com/syntasso/promise-postgresql-ske/commit/9774bc159740876a78ac843c74220d7e7a84ce74))
+* query ske-postgresql health in cluster namespace ([9044231](https://github.com/syntasso/promise-postgresql-ske/commit/9044231527871804b9918728a969e9dfad1a1331))
+* run postgresql pipeline image as non-root ([376f1ad](https://github.com/syntasso/promise-postgresql-ske/commit/376f1adace755c87c9c395ae79898a98744137d6))
+* scope health RBAC to cluster namespace ([f1a3e1c](https://github.com/syntasso/promise-postgresql-ske/commit/f1a3e1c900dac847a28b4e3b04ac42608732fa07))
+
 ## 1.0.0 (2026-04-10)
 
 
